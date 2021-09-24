@@ -1,0 +1,167 @@
+QC 1377 ::
+
+truncate table qw_prod.stgaccount;
+insert into qw_prod.stgaccount 
+SELECT 
+  AccountID as accountNumber, 
+  QID as accountOwnersQID, 
+  case when (
+    SUBSTRING(AccountID,-1) = 'R' 
+    or SUBSTRING(AccountID,-1) = 'Y'
+  ) then 'Joint' else 'Sole' end as ownershipType, 
+  case when SUBSTRING(AccountID,-1) = 'A' then 'Cash' when SUBSTRING(AccountID,-1) = 'B' then 'Cash' when SUBSTRING(AccountID,-1) = 'E' then 'Non-Registered - Other' when SUBSTRING(AccountID,-1) = 'F' then 'Non-Registered - Other' when SUBSTRING(AccountID,-1) = 'J' then 'Non-Registered - Other' when SUBSTRING(AccountID,-1) = 'N' then 'LIRA/LRSP' when SUBSTRING(AccountID,-1) = 'P' then 'RRIF' when SUBSTRING(AccountID,-1) = 'R' then 'Spousal RRSP' when SUBSTRING(AccountID,-1) = 'S' then 'RRSP' when SUBSTRING(AccountID,-1) = 'T' then 'RRIF' when SUBSTRING(AccountID,-1) = 'W' then 'TFSA' when SUBSTRING(AccountID,-1) = 'Y' then 'RRIF' when SUBSTRING(AccountID,-1) = 'Z' then 'RESP' when SUBSTRING(AccountID,-1) = '0' then 'RDSP' end as accountTitle, 
+  'National Bank' as institutionName, 
+  householdQID as accountHouseholdQID, 
+  case when (
+    SUBSTRING(AccountID,-1) = 'Z' 
+    or SUBSTRING(AccountID,-1) = '0'
+  ) then 'Education or Disability' ELSE 'Investment' end as accountType, 
+  'NBIN' as accountFeed, 
+  'NBIN' as accountSource, 
+  '1' as beneficiaryQIDs, 
+  left(
+    AccountID, 
+    LENGTH(AccountID)-1
+  ) as accountRoot, 
+  null as assetAllocation, 
+  '1' as isManaged, 
+  null as isSimulatedInQScore, 
+  now() as startTime, 
+  now() as endTime, 
+  now() as lastUpdated, 
+  '1' as currentFlag, 
+  null as jobId, 
+  '0' as deletedFlag 
+FROM 
+  qw_prod.rptunassignedAccounts;
+truncate table qw_prod.stginvestmentAccountDetails;
+insert into qw_prod.stginvestmentAccountDetails -- 'RRSP','Group RRSP','Spousal RRSP','LIRA/LRSP','DPSP','RRIF','LIF','Registered - Other','Cash','Trust','Corporate','Partnership','Stock Option','Private Holding','Non-Registered - Other','TFSA'
+SELECT 
+  AccountID as accountNumber, 
+  -- QID as accountOwnersQID , null as ownershipType  , null as accountTitle , null as institutionName, householdQID as accountHouseholdQID,
+  case when SUBSTRING(AccountID,-1) = 'A' then 'Cash' when SUBSTRING(AccountID,-1) = 'B' then 'Cash' when SUBSTRING(AccountID,-1) = 'E' then 'Non-Registered - Other' when SUBSTRING(AccountID,-1) = 'F' then 'Non-Registered - Other' when SUBSTRING(AccountID,-1) = 'J' then 'Non-Registered - Other' when SUBSTRING(AccountID,-1) = 'N' then 'LIRA/LRSP' when SUBSTRING(AccountID,-1) = 'P' then 'RRIF' when SUBSTRING(AccountID,-1) = 'R' then 'Spousal RRSP' when SUBSTRING(AccountID,-1) = 'S' then 'RRSP' when SUBSTRING(AccountID,-1) = 'T' then 'RRIF' when SUBSTRING(AccountID,-1) = 'W' then 'TFSA' when SUBSTRING(AccountID,-1) = 'Y' then 'RRIF' when SUBSTRING(AccountID,-1) = 'Z' then 'RESP' when SUBSTRING(AccountID,-1) = '0' then 'RDSP' end as investmentAccountSubType, 
+  null as companyMatch, 
+  now() as accountOpenDate, 
+  null as effectiveMERFeeRate, 
+  null as merPercentage, 
+  null as effectiveAdvisorFeeRate, 
+  mv as marketValue, 
+  bv as bookValue, 
+  null as isContributory, 
+  null as companyMatchAmount, 
+  null as companyMatchPercent, 
+  null as contributionsPercentageOfIncome, 
+  null as contributionAmount, 
+  null as contributionFrequency, 
+  null as contributionStart, 
+  null as contributionEnd, 
+  null as contributionType, 
+  null as autoTransactionID, 
+  null as planJurisdiction, 
+  now() as startTime, 
+  now() as endTime, 
+  now() as lastUpdated, 
+  '1' as currentFlag, 
+  null as jobId, 
+  '0' as deletedFlag 
+FROM 
+  qw_prod.rptunassignedAccounts r -- left join (select distinct  SUBSTRING(accountNumber,-1) as fl, investmentAccountSubType
+  -- from qw_prod.investmentAccountDetails) f
+  -- on SUBSTRING(r.AccountID,-1) = f.fl
+where 
+  SUBSTRING(AccountID,-1) not in ('Z', '0');
+truncate table qw_prod.stgeducationDisabilityAccountDetails;
+insert into qw_prod.stgeducationDisabilityAccountDetails -- 'RRSP','Group RRSP','Spousal RRSP','LIRA/LRSP','DPSP','RRIF','LIF','Registered - Other','Cash','Trust','Corporate','Partnership','Stock Option','Private Holding','Non-Registered - Other','TFSA'
+SELECT 
+  AccountID as accountNumber, 
+  -- QID as accountOwnersQID , null as ownershipType  , null as accountTitle , null as institutionName, householdQID as accountHouseholdQID,
+  case when SUBSTRING(AccountID,-1) = 'A' then 'Cash' when SUBSTRING(AccountID,-1) = 'B' then 'Cash' when SUBSTRING(AccountID,-1) = 'E' then 'Non-Registered - Other' when SUBSTRING(AccountID,-1) = 'F' then 'Non-Registered - Other' when SUBSTRING(AccountID,-1) = 'J' then 'Non-Registered - Other' when SUBSTRING(AccountID,-1) = 'N' then 'LIRA/LRSP' when SUBSTRING(AccountID,-1) = 'P' then 'RRIF' when SUBSTRING(AccountID,-1) = 'R' then 'Spousal RRSP' when SUBSTRING(AccountID,-1) = 'S' then 'RRSP' when SUBSTRING(AccountID,-1) = 'T' then 'RRIF' when SUBSTRING(AccountID,-1) = 'W' then 'TFSA' when SUBSTRING(AccountID,-1) = 'Y' then 'RRIF' when SUBSTRING(AccountID,-1) = 'Z' then 'RESP' when SUBSTRING(AccountID,-1) = '0' then 'RDSP' end as accountSubType, 
+  now() as accountOpenDate, 
+  mv as marketValue, 
+  bv as bookValue, 
+  null as effectiveMERFeeRate, 
+  null as effectiveAdvisorFeeRate, 
+  null as isContributory, 
+  null as contributionEnd, 
+  null as contributionStart, 
+  null as contributionFrequency, 
+  null as contributionAmount, 
+  null as contributionsPercentageOfIncome, 
+  null as contributionType, 
+  null as autoTransactionID, 
+  null as parentGuardianQID, 
+  now() as startTime, 
+  now() as endTime, 
+  now() as lastUpdated, 
+  '1' as currentFlag, 
+  null as jobId, 
+  '0' as deletedFlag 
+FROM 
+  qw_prod.rptunassignedAccounts r -- left join (select distinct  SUBSTRING(accountNumber,-1) as fl, investmentAccountSubType
+  -- from qw_prod.investmentAccountDetails) f
+  -- on SUBSTRING(r.AccountID,-1) = f.fl
+where 
+  SUBSTRING(AccountID,-1) in ('Z', '0');
+truncate table qw_prod.stgaccountOwnershipDetails;
+insert into qw_prod.stgaccountOwnershipDetails 
+SELECT 
+  AccountID as accountNumber, 
+  null as jointAccountOwnerQID, 
+  null as accountFBOQID, 
+  null as accountControlingParty, 
+  now() as startTime, 
+  now() as endTime, 
+  now() as lastUpdated, 
+  '1' as currentFlag, 
+  null as jobId, 
+  '0' as deletedFlag 
+FROM 
+  qw_prod.rptunassignedAccounts;
+insert into qw_prod.investmentAccountDetails 
+select 
+  * 
+FROM 
+  qw_prod.stginvestmentAccountDetails 
+where 
+  trim(accountNumber) not in (
+    select 
+      distinct trim(accountNumber) 
+    FROM 
+      qw_prod.investmentAccountDetails
+  );
+insert into qw_prod.account 
+select 
+  * 
+FROM 
+  qw_prod.stgaccount 
+where 
+  trim(accountNumber) not in (
+    select 
+      distinct trim(accountNumber) 
+    FROM 
+      qw_prod.account
+  );
+insert into qw_prod.educationDisabilityAccountDetails 
+select 
+  * 
+FROM 
+  qw_prod.stgeducationDisabilityAccountDetails 
+where 
+  trim(accountNumber) not in (
+    select 
+      distinct trim(accountNumber) 
+    FROM 
+      qw_prod.educationDisabilityAccountDetails
+  );
+insert into qw_prod.accountOwnershipDetails 
+select 
+  * 
+FROM 
+  qw_prod.stgaccountOwnershipDetails 
+where 
+  trim(accountNumber) not in (
+    select 
+      distinct trim(accountNumber) 
+    FROM 
+      qw_prod.accountOwnershipDetails
+  );
