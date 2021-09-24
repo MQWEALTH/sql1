@@ -1,0 +1,48 @@
+QC 1369 ::
+
+
+
+insert into qw_prod.rptunassignedAccounts
+
+select 
+  * , now() as startTime, now() as endTime, now() as lastUpdated , '1' as currentFlag , null as jobId, '0' as deletedFlag
+from 
+  ( select 
+    df.AccountID, 
+    df.RRCODE, 
+    max(df.AccountMarketValue) as mv ,
+    sum(df.BookValue) as bv
+  from 
+    nbinDataFeed_Current.dailyfeed df 
+  group by 
+    df.AccountID, 
+    df.RRCODE) cte3 
+  inner join (  select 
+    `A C ID`, 
+    c.firstName, 
+    c.lastName, 
+    `Client SIN`, 
+    c.QID, 
+    hm.householdQID 
+    ,c.partnerId
+  from 
+    (SELECT 
+    * 
+  FROM 
+    nbinDataFeed_Current.ETFCMMAP m 
+  WHERE 
+    trim(`A C ID`) IN (
+      SELECT 
+        DISTINCT AccountID 
+      FROM 
+        nbinDataFeed_Current.dailyfeed 
+      WHERE 
+        AccountID NOT IN (
+          SELECT 
+            accountNumber 
+          FROM 
+            qw_prod.account))) cte
+    inner join qw_prod.contact c on trim(c.SIN) = trim(cte.`Client SIN`) 
+    left join qw_prod.householdMembers hm on hm.memberQID = c.QID 
+  where 
+    `Client SIN` <> 0) cte2 on cte3.AccountID = trim(cte2.`A C ID`) ;
