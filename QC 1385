@@ -1,0 +1,19 @@
+QC 1385  ::
+
+insert into qw_prod.logNewNBINAccounts 
+SELECT 
+  a.accountNumber, 
+  a.accountOwnersQID, 
+  a.accountType, 
+  COALESCE(i.marketValue, e.marketValue) as marketvalue, 
+  now() as dateadded, 
+  now() as startTime, 
+  now() as endTime, 
+  now() as lastUpdated, 
+  '1' as currentFlag, 
+  null as jobId, 
+  '0' as deletedFlag 
+FROM 
+  qw_prod.stgaccount a 
+  left join stginvestmentAccountDetails i on trim(a.accountNumber) = trim(i.accountNumber) 
+  left join stgeducationDisabilityAccountDetails e on trim(a.accountNumber) = trim(e.accountNumber);
