@@ -1,7 +1,7 @@
 QC 1369 ::
 
 
-
+truncate table insert into qw_prod.rptunassignedAccounts ;
 insert into qw_prod.rptunassignedAccounts
 
 select 
