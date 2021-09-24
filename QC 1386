@@ -1,0 +1,18 @@
+QC 1386 ::
+
+insert INTO qw_prod.rptExceptionUnmatchedAccounts 
+select 
+  AccountID, 
+  RRCODE as rrcode, 
+  mv as marketValue, 
+  concat(firstName, ' ', lastName) as name, 
+  `Client SIN` as clientSIN, 
+  now() as dateadded, 
+  now() as startTime, 
+  now() as endTime, 
+  now() as lastUpdated, 
+  '1' as currentFlag, 
+  null as jobId, 
+  '0' as deletedFlag 
+FROM 
+  qw_prod.rptunassignedAccounts;
